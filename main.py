@@ -35,23 +35,41 @@ datePostButton = driver.find_element(By.XPATH, ("//button[normalize-space()='Dat
 dateOption = driver.find_element(By.XPATH, ("//span[normalize-space()='Last 7 days']")).click()
 dateApplyButton = driver.find_element(By.XPATH, ("//button[normalize-space()='Apply']")).click()
 time.sleep(2)
-jobPosts = driver.find_element(By.CSS_SELECTOR, "article.z1s6m00").click()
-time.sleep(2)
+clickJobPosts = driver.find_elements(By.CSS_SELECTOR,"article.z1s6m00")
+for el in clickJobPosts:
+    el.click()
+    time.sleep(0.5)
+
+wait = WebDriverWait(driver, 10)
+wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[data-automation='jobDetailsLinkNewTab'] a")))
 
 page = driver.page_source
 soup = BeautifulSoup(page, 'lxml')
-jobs = soup.find_all('article',class_='article.z1s6m00')
+jobs = soup.select("article.z1s6m00")
 
-#Job Information
 companyName = soup.select("article div.z1s6m00 span.z1s6m00 a[data-automation='jobCardCompanyLink']")
 jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
 url = soup.select("div[data-automation='jobDetailsLinkNewTab'] a")
-jobHightlights = soup.select("ul.z1s6m00 li")
+jobHighlights = soup.select("ul.z1s6m00 li")
 jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
 
-#Print out the Job Information on each jobPosts first
 
-time.sleep(2)
+print("Numbers of jobs: " + str(len(jobs)))
+
+for i, job in enumerate(jobs):
+    # Print Job Information
+    print("JobPost:", jobPosition[i].text)
+    if i < len(companyName):
+        print("Company:", companyName[i].text)
+    if i < len(jobHighlights):
+        print("Job Highlights:", jobHighlights[i].text)
+    if i < len(jobLocation):
+        print("Location:", jobLocation[i].text)
+    if i < len(url):
+        link = url[i].get('href')
+        print("URL:", domain + link)
+    print("=" * 70)
+
 driver.quit()
 
 
