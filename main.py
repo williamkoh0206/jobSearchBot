@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import re
 import traceback
 
-PATH = "C:/Users/William/Desktop/ECJobapply/chromedriver.exe"
+
 driver = webdriver.Chrome()
 domain = "https://hk.jobsdb.com/"
 driver.get(domain)
@@ -19,26 +19,40 @@ search = driver.find_element(By.ID, "searchKeywordsField")
 search.send_keys("programmer")
 search.send_keys(Keys.RETURN)
 
-selectLocation = driver.find_element(By.CLASS_NAME, "_23enrv0").click()
+selectLocation = driver.find_element(By.CSS_SELECTOR, ".z1s6m00 [data-automation='locationChecklistField']").click()
 
-#Eastern Area: label id="Select-0-166"
-#Kwun Tong Area: label id="Select-0-130"
-#Wan Chai Area: label id="Select-0-146"
 
-locations1 = driver.find_element(By.XPATH, ("//label[@for='Select-0-166']")).click()
-# locations2 = driver.find_element(By.XPATH, ("//label[@for='Select-0-130']")).click()
-# locations3 = driver.find_element(By.XPATH, ("//label[@for='Select-0-146']")).click()
-searchButton = driver.find_element(By.XPATH, ("//button[@type='submit']")).click()
-time.sleep(3)
+locations = driver.find_elements(By.CSS_SELECTOR, ("div.z1s6m00 input.z1s6m00"))
+selectedLocations = [5,8,18]
+#Eastern Area: Index:5"
+#Kwun Tong Area: Index:8"
+#Wan Chai Area: Index:18"
 
-datePostButton = driver.find_element(By.XPATH, ("//button[normalize-space()='Date posted']")).click()
-dateOption = driver.find_element(By.XPATH, ("//span[normalize-space()='Last 7 days']")).click()
-dateApplyButton = driver.find_element(By.XPATH, ("//button[normalize-space()='Apply']")).click()
+for index in selectedLocations:
+    if index < len(locations):
+        try:
+            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00 input.z1s6m00")))
+            locations[index-1].click()
+            time.sleep(1)
+        except:
+            print("Cannot found the locations")
+searchButton = driver.find_element(By.CSS_SELECTOR, ("button[data-automation='searchSubmitButton']")).click()
 time.sleep(2)
+
+datePostButton = driver.find_element(By.CSS_SELECTOR, ("button[data-automation='createdAtFilterButton']")).click()
+dates = driver.find_element(By.XPATH,("//span[normalize-space()='Last 7 days']")).click()
+dateApplyBtn = driver.find_element(By.CSS_SELECTOR, ("button[data-automation='refinementFormApplyButton']")).click()
+time.sleep(1)
 clickJobPosts = driver.find_elements(By.CSS_SELECTOR,"article.z1s6m00")
+driver.execute_script("window.scrollBy(0,25);")
 for el in clickJobPosts:
-    el.click()
-    time.sleep(0.5)
+    try:
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "article.z1s6m00")))
+        WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "article.z1s6m00")))
+        el.click()
+        time.sleep(0.5)
+    except:
+        print("Element is not clickable or not found.")
 
 wait = WebDriverWait(driver, 10)
 wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[data-automation='jobDetailsLinkNewTab'] a")))
@@ -49,24 +63,29 @@ jobs = soup.select("article.z1s6m00")
 
 companyName = soup.select("article div.z1s6m00 span.z1s6m00 a[data-automation='jobCardCompanyLink']")
 jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
-url = soup.select("div[data-automation='jobDetailsLinkNewTab'] a")
+jobUrls = soup.select("article.z1s6m00 h1.z1s6m00 a")
 jobHighlights = soup.select("ul.z1s6m00 li")
 jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
 
 
 print("Numbers of jobs: " + str(len(jobs)))
+print("=" * 70)
 
-for i, job in enumerate(jobs):
+for i in range(len(jobs)):
     # Print Job Information
     print("JobPost:", jobPosition[i].text)
     if i < len(companyName):
         print("Company:", companyName[i].text)
-    if i < len(jobHighlights):
-        print("Job Highlights:", jobHighlights[i].text)
     if i < len(jobLocation):
         print("Location:", jobLocation[i].text)
-    if i < len(url):
-        link = url[i].get('href')
+    # Find and print Job Highlights
+    job = jobs[i]
+    jobHighlights = job.select("ul.z1s6m00 li")
+    print("Job Highlights:")
+    for highlight in jobHighlights:
+        print("  *", highlight.text)
+    if i < len(jobUrls):
+        link = jobUrls[i].get('href')
         print("URL:", domain + link)
     print("=" * 70)
 
