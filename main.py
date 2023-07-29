@@ -5,9 +5,14 @@ import time
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import re
-import traceback
+import csv
 
+
+fn='jobsDB_Post.csv'
+columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
+# with open(fn,'w',newline='',) as csvFile:
+#     dictWriter = csv.DictWriter(csvFile,fieldnames=columns_name)
+#     dictWriter.writeheader()
 
 driver = webdriver.Chrome()
 domain = "https://hk.jobsdb.com/"
@@ -66,29 +71,47 @@ jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
 jobUrls = soup.select("article.z1s6m00 h1.z1s6m00 a")
 jobHighlights = soup.select("ul.z1s6m00 li")
 jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
+postedDate = soup.select("div.z1s6m00 time span")
 
 
 print("Numbers of jobs: " + str(len(jobs)))
 print("=" * 70)
 
-for i in range(len(jobs)):
-    # Print Job Information
-    print("JobPost:", jobPosition[i].text)
-    if i < len(companyName):
-        print("Company:", companyName[i].text)
-    if i < len(jobLocation):
-        print("Location:", jobLocation[i].text)
-    # Find and print Job Highlights
-    job = jobs[i]
-    jobHighlights = job.select("ul.z1s6m00 li")
-    print("Job Highlights:")
-    for highlight in jobHighlights:
-        print("  *", highlight.text)
-    if i < len(jobUrls):
-        link = jobUrls[i].get('href')
-        print("URL:", domain + link)
-    print("=" * 70)
+#open the csv file for writing
+with open(fn, 'w', newline='',encoding='utf_8_sig') as csvFile:
+    dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
+    dictWriter.writeheader()
 
+    for i in range(len(jobs)):
+        # Print Job Information
+        print("JobPost:", jobPosition[i].text)
+        if i < len(companyName):
+            print("Company:", companyName[i].text)
+        if i < len(jobLocation):
+            print("Location:", jobLocation[i].text)
+        # Find and print Job Highlights
+        job = jobs[i]
+        jobHighlights = job.select("ul.z1s6m00 li")
+        print("Job Highlights:")
+        for highlight in jobHighlights:
+            print("  *", highlight.text)
+        if i < len(postedDate):
+            print("Posted on:",postedDate[i].text)
+        if i < len(jobUrls):
+            link = jobUrls[i].get('href')
+            print("URL:", domain + link)
+        print("=" * 70)
+
+        #Write job details to the CSV file
+        dictWriter.writerow(
+            {'職位名稱': jobPosition[i].text,
+            '公司名稱': companyName[i].text if i < len(companyName) else '',
+            '地區': jobLocation[i].text if i < len(jobLocation) else '',
+            '工作詳情': '\n'.join([highlight.text for highlight in jobHighlights]),
+            '發佈時間': postedDate[i].text if i < len(postedDate) else '',
+            '網址': domain + link if i < len(jobUrls) else ''
+            }
+        )
 driver.quit()
 
 
