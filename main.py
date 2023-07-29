@@ -7,10 +7,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import csv
 import pandas as pd
+import xlsxwriter
+import os
 
-fn='jobsDB_Post.csv'
+dirname = os.path.dirname(__file__)
+filename = os.path.join(dirname)
+
 columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
-
+job_keyword = 'SEO specialist'
+csv_file=f"jobsDB_{job_keyword}_Post.csv"
 
 driver = webdriver.Chrome()
 domain = "https://hk.jobsdb.com/"
@@ -19,7 +24,7 @@ driver.fullscreen_window()
 time.sleep(1)
 
 search = driver.find_element(By.ID, "searchKeywordsField")
-search.send_keys("programmer")
+search.send_keys(job_keyword)
 search.send_keys(Keys.RETURN)
 
 selectLocation = driver.find_element(By.CSS_SELECTOR, ".z1s6m00 [data-automation='locationChecklistField']").click()
@@ -76,7 +81,7 @@ print("Numbers of jobs: " + str(len(jobs)))
 print("=" * 70)
 
 #open the csv file for writing
-with open(fn, 'w', newline='',encoding='utf_8_sig') as csvFile:
+with open(csv_file, 'w', newline='',encoding='utf_8_sig') as csvFile:
     dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
     dictWriter.writeheader()
 
@@ -117,7 +122,7 @@ for data in range(len(jobs)):
     jobHighlights = job.select("ul.z1s6m00 li")
     # Find and print URL (inside the loop)
     link = jobUrls[data].get('href')
-    
+
     jobs_dict = {
         '職位名稱': jobPosition[data].text,
         '公司名稱': companyName[data].text if data < len(companyName) else '',
@@ -131,8 +136,32 @@ for data in range(len(jobs)):
 df = pd.DataFrame(job_data)
 
 # Save the DataFrame to an Excel file
-excel_file = 'jobsDB_Post.xlsx'
+excel_file = f"jobsDB_{job_keyword}_Post.xlsx"
 df.to_excel(excel_file, index=False)
+
+# Create a Pandas Excel writer using XlsxWriter as the engine
+writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
+
+# Convert the DataFrame to an XlsxWriter Excel object
+df.to_excel(writer, sheet_name='Sheet1', index=False)
+
+# Get the XlsxWriter workbook and worksheet objects
+workbook  = writer.book
+worksheet = writer.sheets['Sheet1']
+
+# Add a hyperlink format to be used in the "網址" column
+url_format = workbook.add_format({'color': 'blue', 'underline': 1})
+# Define the "網址" column range
+url_col = df.columns.get_loc('網址') # Add 1 to get the Excel column number (1-indexed)
+
+# Iterate through the rows and add hyperlinks to the "網址" column
+for row_num in range(len(df)):
+    cell_value = df.at[row_num, '網址']
+    worksheet.write_url(row_num + 1, url_col, cell_value, url_format)
+
+
+# Close the Pandas Excel writer and save the Excel file
+writer.close()
 
 driver.quit()
 
