@@ -6,13 +6,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import csv
-
+import pandas as pd
 
 fn='jobsDB_Post.csv'
 columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
-# with open(fn,'w',newline='',) as csvFile:
-#     dictWriter = csv.DictWriter(csvFile,fieldnames=columns_name)
-#     dictWriter.writeheader()
+
 
 driver = webdriver.Chrome()
 domain = "https://hk.jobsdb.com/"
@@ -112,6 +110,29 @@ with open(fn, 'w', newline='',encoding='utf_8_sig') as csvFile:
             '網址': domain + link if i < len(jobUrls) else ''
             }
         )
-driver.quit()
+job_data = []
+for data in range(len(jobs)):
+    # Find and print Job Highlights (inside the loop)
+    job = jobs[data]
+    jobHighlights = job.select("ul.z1s6m00 li")
+    # Find and print URL (inside the loop)
+    link = jobUrls[data].get('href')
+    
+    jobs_dict = {
+        '職位名稱': jobPosition[data].text,
+        '公司名稱': companyName[data].text if data < len(companyName) else '',
+        '地區': jobLocation[data].text if data < len(jobLocation) else '',
+        '工作詳情': '\n'.join([highlight.text for highlight in jobHighlights]),
+        '發佈時間': postedDate[data].text if data < len(postedDate) else '',
+        '網址': domain + link if data < len(jobUrls) else ''
+    }
+    job_data.append(jobs_dict)
+# Create a pandas DataFrame from the list of dictionaries
+df = pd.DataFrame(job_data)
 
+# Save the DataFrame to an Excel file
+excel_file = 'jobsDB_Post.xlsx'
+df.to_excel(excel_file, index=False)
+
+driver.quit()
 
