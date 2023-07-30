@@ -10,12 +10,15 @@ import pandas as pd
 import xlsxwriter
 import os
 
-dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname)
+output_folder = os.path.join(os.path.dirname(__file__), "output")
+os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
+
+
 
 columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
 job_keyword = 'SEO specialist'
-csv_file=f"jobsDB_{job_keyword}_Post.csv"
+csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.csv")
+
 
 driver = webdriver.Chrome()
 domain = "https://hk.jobsdb.com/"
@@ -136,7 +139,7 @@ for data in range(len(jobs)):
 df = pd.DataFrame(job_data)
 
 # Save the DataFrame to an Excel file
-excel_file = f"jobsDB_{job_keyword}_Post.xlsx"
+excel_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.xlsx")
 df.to_excel(excel_file, index=False)
 
 # Create a Pandas Excel writer using XlsxWriter as the engine
