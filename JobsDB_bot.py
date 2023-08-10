@@ -12,11 +12,11 @@ import xlsxwriter
 import os
 
 class jobsdbBot:
-    def __init__(self, _domain, _keywords):
+    def __init__(self, _domain, _keywords, _locations):
         global domain, job_keyword, locations, format
         domain = _domain
         job_keyword = _keywords
-        #locations = _locations
+        locations = _locations
         # format = _format 
     
         # ================ Chrome Browser Automation Start ================
@@ -41,12 +41,10 @@ class jobsdbBot:
         search.send_keys(job_keyword)
         search.send_keys(Keys.RETURN)
         driver.find_element(By.CSS_SELECTOR, ".z1s6m00 [data-automation='locationChecklistField']").click()
-        locations = driver.find_elements(By.CSS_SELECTOR, ("div.z1s6m00 label.z1s6m00 input.z1s6m00"))
-        labels = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00 label.z1s6m00")
-        location_names = [label.text for label in labels]
-        print(location_names)
+        location_names = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00:not([data-automation]) label.z1s6m00:not([data-automation])")
+        location_btn = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00 input.z1s6m00")
 
-        """
+        
         selectedLocations = {
             'All': 1,
             'Central & Western': 2,
@@ -69,20 +67,23 @@ class jobsdbBot:
             'Yau Tsim Mong':19,
             'Yuen Long':20
         }
-     
-        for location, index in selectedLocations.items():
-            if location in locations:
-                try:
-                    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00 input.z1s6m00")))
-                    ActionChains(driver).move_to_element(locations[index - 1]).click().perform()
-                    sleep(1)
-                except:
-                    print(f"Cannot found the location: {location}")
-            
-            searchButton = driver.find_element(By.CSS_SELECTOR, ("button[data-automation='searchSubmitButton']")).click()
-            sleep(2)
-        """      
-    
+        selected_values = []
+        for loc in locations:
+            if loc in selectedLocations:
+                selected_value = selectedLocations[loc] #match the user inputs as the key of the selectedLocations
+                selected_values.append(selected_value) #update the corresponding value to the array
+        print(selected_values)
+
+        for selectBtns in selected_values:
+            if selectBtns in range(1, len(location_btn) - 7): #[1-20] are the hk locations
+                location_btn[selectBtns].click()
+                sleep(1)
+            else:
+                print("Selected value is not in the valid range.")
+        
+        driver.find_element(By.CSS_SELECTOR, ("button[data-automation='searchSubmitButton']")).click()
+        sleep(1)
+              
     """
     output_folder = os.path.join(os.path.dirname(__file__), "output")
     os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
