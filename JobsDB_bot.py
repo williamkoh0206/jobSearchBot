@@ -20,18 +20,63 @@ class jobsdbBot:
         dates = _dates
         # format = _format 
     
-        # ================ Chrome Browser Automation Start ================
+    def scrape_job_information(self):
+        page = driver.page_source
+        soup = BeautifulSoup(page, 'lxml')
+        self.jobs = soup.select("article.z1s6m00")
+        self.companyName = soup.select("article div.z1s6m00 span.z1s6m00 a[data-automation='jobCardCompanyLink']")
+        self.jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
+        self.jobUrls = soup.select("article.z1s6m00 h1.z1s6m00 a")
+        self.jobHighlights = soup.select("ul.z1s6m00 li")
+        self.jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
+        self.postedDate = soup.select("div.z1s6m00 time span")
+        print("Numbers of jobs: " + str(len(self.jobs)))
+        print("=" * 70)
+        for i in range(len(self.jobs)):
+          # Print Job Information
+            print("JobPost:", self.jobPosition[i].text)
+            if i < len(self.companyName):
+                print("Company:", self.companyName[i].text)
+            if i < len(self.jobLocation):
+                print("Location:", self.jobLocation[i].text)
+            # Find and print Job Highlights
+            job = self.jobs[i]
+            jobHighlights = job.select("ul.z1s6m00 li")
+            print("Job Highlights:")
+            for highlight in jobHighlights:
+                print("  *", highlight.text)
+            if i < len(self.postedDate):
+                print("Posted on:",self.postedDate[i].text)
+            if i < len(self.jobUrls):
+                link = self.jobUrls[i].get('href')
+                print("URL:", domain + link)
+                print("=" * 70)
+
     def start(self):
-        configChrome = webdriver.ChromeOptions()
+        # ================ Handle chrome browser version missmatched issue ================
+        global options
+        options = webdriver.ChromeOptions()
         #Disable the detected automation message
-        configChrome.add_experimental_option("useAutomationExtension", False)
-        configChrome.add_experimental_option("excludeSwitches",["enable-automation"])
+        options.add_experimental_option("useAutomationExtension", False)
+        options.add_experimental_option("excludeSwitches",["enable-automation"])
         #Disable the password massenger
         prefs = {"credentials_enable_service": False, "profile.password_manager_enabled": False}
-        configChrome.add_experimental_option("prefs",prefs)
+        options.add_experimental_option("prefs", prefs)
+
+        # ================ Chrome Browser Automation Start ================     
+        options.add_experimental_option("useAutomationExtension", False)
+        options.add_experimental_option("excludeSwitches",["enable-automation"])
+        
+        prefs = {"credentials_enable_service": False, "profile.password_manager_enabled": False}
+        options.add_experimental_option("prefs",prefs)
 
         global driver
-        driver = webdriver.Chrome(options=configChrome)
+        try:
+            driver = webdriver.Chrome(options=options)
+        except:
+            options = webdriver.EdgeOptions()
+            self.setOption()
+            driver = webdriver.Edge(options = options)
         driver.maximize_window()
         driver.implicitly_wait(10)
 
@@ -116,36 +161,58 @@ class jobsdbBot:
         sleep(3)
 
         # ================ Search jobs one by one================
-        clickJobPosts = driver.find_elements(By.CSS_SELECTOR,"article.z1s6m00")
-        driver.execute_script("window.scrollBy(0,25);")
-        for el in clickJobPosts:
+        # clickJobPosts = driver.find_elements(By.CSS_SELECTOR,"article.z1s6m00")
+        # driver.execute_script("window.scrollBy(0,40);")
+        # for el in clickJobPosts:
+        #     try:
+        #         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "article.z1s6m00")))
+        #         WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "article.z1s6m00")))
+        #         el.click()
+        #         sleep(0.5)
+        #     except:
+        #         print("Element is not clickable or not found.")
+        # driver.execute_script("window.scrollBy(0,20);")
+
+        clicked_next_page_count = 0
+        previous_url = ''
+        current_url = driver.current_url
+
+        while clicked_next_page_count < 2:
+            nextpage_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")))
             try:
-                WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "article.z1s6m00")))
-                WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "article.z1s6m00")))
-                el.click()
-                sleep(0.5)
-            except:
-                print("Element is not clickable or not found.")
-
-        wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[data-automation='jobDetailsLinkNewTab'] a")))
-
-        page = driver.page_source
-        soup = BeautifulSoup(page, 'lxml')
-        jobs = soup.select("article.z1s6m00")
-
-        companyName = soup.select("article div.z1s6m00 span.z1s6m00 a[data-automation='jobCardCompanyLink']")
-        jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
-        jobUrls = soup.select("article.z1s6m00 h1.z1s6m00 a")
-        jobHighlights = soup.select("ul.z1s6m00 li")
-        jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
-        postedDate = soup.select("div.z1s6m00 time span")
-
-
-        print("Numbers of jobs: " + str(len(jobs)))
-        print("=" * 70)
-
-              
+                if nextpage_btn.is_displayed():
+                    print('Button is found and clickable')
+                    if current_url != previous_url:
+                        self.scrape_job_information()                 
+                        previous_url = current_url
+                        print('run 1 time')                                  
+                    else:
+                        print("previous url is the same")
+                        break
+                    driver.execute_script("arguments[0].click();", nextpage_btn)
+                    driver.implicitly_wait(5)
+                    updated_url = driver.current_url
+                    current_url = updated_url             
+                    clicked_next_page_count += 1
+                    print(f'previousURL{previous_url}')
+                    print(f'currentURL{current_url}')
+                    if current_url != previous_url:
+                        self.scrape_job_information()                 
+                        previous_url = current_url
+                        print('run 2 time')                                   
+                    else:
+                        print("previous url is the same")
+                        break  
+                    next_page_btns = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")
+                    next_page_btns[1].click()                                   
+                    print(nextpage_btn.is_displayed())
+                else:
+                    print('Button is not displayed or already clicked twice')
+                    break                
+            except:              
+                print("No more pages to navigate")
+                break
+        print("Finished navigating and scraping")
     """
     output_folder = os.path.join(os.path.dirname(__file__), "output")
     os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
@@ -160,26 +227,6 @@ class jobsdbBot:
     with open(csv_file, 'w', newline='',encoding='utf_8_sig') as csvFile:
         dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
         dictWriter.writeheader()
-
-        for i in range(len(jobs)):
-            # Print Job Information
-            print("JobPost:", jobPosition[i].text)
-            if i < len(companyName):
-                print("Company:", companyName[i].text)
-            if i < len(jobLocation):
-                print("Location:", jobLocation[i].text)
-            # Find and print Job Highlights
-            job = jobs[i]
-            jobHighlights = job.select("ul.z1s6m00 li")
-            print("Job Highlights:")
-            for highlight in jobHighlights:
-                print("  *", highlight.text)
-            if i < len(postedDate):
-                print("Posted on:",postedDate[i].text)
-            if i < len(jobUrls):
-                link = jobUrls[i].get('href')
-                print("URL:", domain + link)
-            print("=" * 70)
 
             #Write job details to the CSV file
             dictWriter.writerow(
