@@ -32,6 +32,8 @@ class jobsdbBot:
         self.postedDate = soup.select("div.z1s6m00 time span")
         print("Numbers of jobs: " + str(len(self.jobs)))
         print("=" * 70)
+        job_details_list = []  # List to store all job details
+
         for i in range(len(self.jobs)):
           # Print Job Information
             print("JobPost:", self.jobPosition[i].text)
@@ -42,6 +44,8 @@ class jobsdbBot:
             # Find and print Job Highlights
             job = self.jobs[i]
             jobHighlights = job.select("ul.z1s6m00 li")
+            job_highlights_list = [highlight.text for highlight in jobHighlights]
+            job_highlights_str = '\n'.join(job_highlights_list)
             print("Job Highlights:")
             for highlight in jobHighlights:
                 print("  *", highlight.text)
@@ -51,6 +55,16 @@ class jobsdbBot:
                 link = self.jobUrls[i].get('href')
                 print("URL:", domain + link)
                 print("=" * 70)
+            job_details = {
+                '職位名稱': self.jobPosition[i].text,
+                '公司名稱': self.companyName[i].text if i < len(self.companyName) else '',
+                '地區': self.jobLocation[i].text if i < len(self.jobLocation) else '',
+                '工作詳情': job_highlights_str,
+                '發佈時間': self.postedDate[i].text if i < len(self.postedDate) else '',
+                '網址': domain + self.jobUrls[i].get('href') if i < len(self.jobUrls) else ''
+                }
+            job_details_list.append(job_details)
+        return job_details_list 
 
     def start(self):
         # ================ Handle chrome browser version missmatched issue ================
@@ -176,68 +190,60 @@ class jobsdbBot:
         clicked_next_page_count = 0
         previous_url = ''
         current_url = driver.current_url
-
-        while clicked_next_page_count < 2:
-            nextpage_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")))
-            try:
-                if nextpage_btn.is_displayed():
-                    print('Button is found and clickable')
-                    if current_url != previous_url:
-                        self.scrape_job_information()                 
-                        previous_url = current_url
-                        print('run 1 time')                                  
-                    else:
-                        print("previous url is the same")
+        # ================ Scraping jobs ================
+        try:
+            if (driver.find_element(By.CSS_SELECTOR,("div.z1s6m00[data-automation='pagination'] a"))):
+                while clicked_next_page_count < 2:
+                    try:
+                        nextpage_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")))
+                        if nextpage_btn.is_displayed():
+                            print('Button is found and clickable')
+                            if current_url != previous_url:
+                                self.scrape_job_information()                 
+                                print(f'Scraping from: {current_url}')
+                                previous_url = current_url
+                                driver.execute_script("arguments[0].click();", nextpage_btn)
+                                driver.implicitly_wait(5)
+                                sleep(2)
+                                updated_url = driver.current_url
+                                current_url = updated_url             
+                                clicked_next_page_count += 1
+                                print(f'Navigating to next page: {current_url}')              
+                                driver.implicitly_wait(5)
+                                next_page_btns = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")
+                                if next_page_btns.is_displayed() and len((next_page_btns) >=2):
+                                    next_page_btns[1].click()
+                                else:
+                                    driver.implicitly_wait(3)
+                                    driver.find_element(By.CSS_SELECTOR,"button.z1s6m00[disabled]").click()
+                                    print("previous url is the same")
+                                break                                                    
+                            print(nextpage_btn.is_displayed())
+                        else:
+                            print('Button is not displayed or already clicked twice')
+                            break                
+                    except:               
+                        print("No more pages to navigate")
                         break
-                    driver.execute_script("arguments[0].click();", nextpage_btn)
-                    driver.implicitly_wait(5)
-                    updated_url = driver.current_url
-                    current_url = updated_url             
-                    clicked_next_page_count += 1
-                    print(f'previousURL{previous_url}')
-                    print(f'currentURL{current_url}')
-                    if current_url != previous_url:
-                        self.scrape_job_information()                 
-                        previous_url = current_url
-                        print('run 2 time')                                   
-                    else:
-                        print("previous url is the same")
-                        break  
-                    next_page_btns = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")
-                    next_page_btns[1].click()                                   
-                    print(nextpage_btn.is_displayed())
-                else:
-                    print('Button is not displayed or already clicked twice')
-                    break                
-            except:              
-                print("No more pages to navigate")
-                break
-        print("Finished navigating and scraping")
+                print("Finished navigating and scraping")              
+        except:
+            self.scrape_job_information()
+            print("scraping jobs issue")
+
+        output_folder = os.path.join(os.path.dirname(__file__), "output")
+        os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
+        columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
+        csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.csv")
+        job_details_list = self.scrape_job_information()
+
+        #open the csv file for writing
+        with open(csv_file, 'w', newline='',encoding='utf_8_sig') as csvFile:
+            dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
+            dictWriter.writeheader()
+        #Write job details to the CSV file
+            for job_details in job_details_list:
+                dictWriter.writerow(job_details)
     """
-    output_folder = os.path.join(os.path.dirname(__file__), "output")
-    os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
-
-
-
-    columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
-    csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.csv")
-
-
-    #open the csv file for writing
-    with open(csv_file, 'w', newline='',encoding='utf_8_sig') as csvFile:
-        dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
-        dictWriter.writeheader()
-
-            #Write job details to the CSV file
-            dictWriter.writerow(
-                {'職位名稱': jobPosition[i].text,
-                '公司名稱': companyName[i].text if i < len(companyName) else '',
-                '地區': jobLocation[i].text if i < len(jobLocation) else '',
-                '工作詳情': '\n'.join([highlight.text for highlight in jobHighlights]),
-                '發佈時間': postedDate[i].text if i < len(postedDate) else '',
-                '網址': domain + link if i < len(jobUrls) else ''
-                }
-            )
     job_data = []
     for data in range(len(jobs)):
         # Find and print Job Highlights (inside the loop)
