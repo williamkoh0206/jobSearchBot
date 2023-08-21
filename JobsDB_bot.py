@@ -190,6 +190,7 @@ class jobsdbBot:
         clicked_next_page_count = 0
         previous_url = ''
         current_url = driver.current_url
+        job_details_list = []      
         # ================ Scraping jobs ================
         try:
             if (driver.find_element(By.CSS_SELECTOR,("div.z1s6m00[data-automation='pagination'] a"))):
@@ -199,7 +200,7 @@ class jobsdbBot:
                         if nextpage_btn.is_displayed():
                             print('Button is found and clickable')
                             if current_url != previous_url:
-                                self.scrape_job_information()                 
+                                job_details_list += self.scrape_job_information()            
                                 print(f'Scraping from: {current_url}')
                                 previous_url = current_url
                                 driver.execute_script("arguments[0].click();", nextpage_btn)
@@ -225,16 +226,16 @@ class jobsdbBot:
                     except:               
                         print("No more pages to navigate")
                         break
+                job_details_list += self.scrape_job_information()
                 print("Finished navigating and scraping")              
         except:
-            self.scrape_job_information()
+            job_details_list=self.scrape_job_information()
             print("scraping jobs issue")
 
         output_folder = os.path.join(os.path.dirname(__file__), "output")
         os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
         columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
         csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.csv")
-        job_details_list = self.scrape_job_information()
 
         #open the csv file for writing
         with open(csv_file, 'w', newline='',encoding='utf_8_sig') as csvFile:
