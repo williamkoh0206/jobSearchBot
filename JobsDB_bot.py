@@ -23,67 +23,62 @@ class jobsdbBot:
     def scrape_job_information(self):
         page = driver.page_source
         soup = BeautifulSoup(page, 'lxml')
-        self.jobs = soup.select("article.z1s6m00")
-        self.companyName = soup.select("article div.z1s6m00 span.z1s6m00 a[data-automation='jobCardCompanyLink']")
-        self.jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
-        self.jobUrls = soup.select("article.z1s6m00 h1.z1s6m00 a")
-        self.jobHighlights = soup.select("ul.z1s6m00 li")
-        self.jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
-        self.postedDate = soup.select("div.z1s6m00 time span")
-        print("Numbers of jobs: " + str(len(self.jobs)))
+        jobs = soup.select("article.z1s6m00")
+        companyName = soup.select("article div.z1s6m00 span.z1s6m00 a[data-automation='jobCardCompanyLink']")
+        jobPosition = soup.select("article div.z1s6m00 h1.z1s6m00 span.z1s6m00")
+        jobUrls = soup.select("article.z1s6m00 h1.z1s6m00 a")
+        jobHighlights = soup.select("ul.z1s6m00 li")
+        jobLocation = soup.select("span.z1s6m00 a[data-automation='jobCardLocationLink']")
+        postedDate = soup.select("div.z1s6m00 time span")
+        print("Numbers of jobs: " + str(len(jobs)))
         print("=" * 70)
         job_details_list = []  # List to store all job details
 
-        for i in range(len(self.jobs)):
+        for i in range(len(jobs)):
           # Print Job Information
-            print("JobPost:", self.jobPosition[i].text)
-            if i < len(self.companyName):
-                print("Company:", self.companyName[i].text)
-            if i < len(self.jobLocation):
-                print("Location:", self.jobLocation[i].text)
+            print("JobPost:", jobPosition[i].text)
+            if i < len(companyName):
+                print("Company:", companyName[i].text)
+            if i < len(jobLocation):
+                print("Location:", jobLocation[i].text)
             # Find and print Job Highlights
-            job = self.jobs[i]
+            job = jobs[i]
             jobHighlights = job.select("ul.z1s6m00 li")
             job_highlights_list = [highlight.text for highlight in jobHighlights]
             job_highlights_str = '\n'.join(job_highlights_list)
             print("Job Highlights:")
             for highlight in jobHighlights:
                 print("  *", highlight.text)
-            if i < len(self.postedDate):
-                print("Posted on:",self.postedDate[i].text)
-            if i < len(self.jobUrls):
-                link = self.jobUrls[i].get('href')
+            if i < len(postedDate):
+                print("Posted on:",postedDate[i].text)
+            if i < len(jobUrls):
+                link = jobUrls[i].get('href')
                 print("URL:", domain + link)
                 print("=" * 70)
             job_details = {
-                '職位名稱': self.jobPosition[i].text,
-                '公司名稱': self.companyName[i].text if i < len(self.companyName) else '',
-                '地區': self.jobLocation[i].text if i < len(self.jobLocation) else '',
+                '職位名稱': jobPosition[i].text,
+                '公司名稱': companyName[i].text if i < len(companyName) else '',
+                '地區': jobLocation[i].text if i < len(jobLocation) else '',
                 '工作詳情': job_highlights_str,
-                '發佈時間': self.postedDate[i].text if i < len(self.postedDate) else '',
-                '網址': domain + self.jobUrls[i].get('href') if i < len(self.jobUrls) else ''
+                '發佈時間': postedDate[i].text if i < len(postedDate) else '',
+                '網址': domain + jobUrls[i].get('href') if i < len(jobUrls) else ''
                 }
             job_details_list.append(job_details)
-        return job_details_list 
+        return job_details_list
 
-    def start(self):
-        # ================ Handle chrome browser version missmatched issue ================
+    def setOption(self):
+		#Handle chrome browser version missmatched issue
         global options
-        options = webdriver.ChromeOptions()
-        #Disable the detected automation message
         options.add_experimental_option("useAutomationExtension", False)
         options.add_experimental_option("excludeSwitches",["enable-automation"])
-        #Disable the password massenger
         prefs = {"credentials_enable_service": False, "profile.password_manager_enabled": False}
         options.add_experimental_option("prefs", prefs)
 
+    def start(self):
+        global options
+        options = webdriver.ChromeOptions()
+        self.setOption()
         # ================ Chrome Browser Automation Start ================     
-        options.add_experimental_option("useAutomationExtension", False)
-        options.add_experimental_option("excludeSwitches",["enable-automation"])
-        
-        prefs = {"credentials_enable_service": False, "profile.password_manager_enabled": False}
-        options.add_experimental_option("prefs",prefs)
-
         global driver
         try:
             driver = webdriver.Chrome(options=options)
@@ -230,7 +225,7 @@ class jobsdbBot:
                 print("Finished navigating and scraping")              
         except:
             job_details_list=self.scrape_job_information()
-            print("scraping jobs issue")
+            print("Only 1 page result")
 
         output_folder = os.path.join(os.path.dirname(__file__), "output")
         os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
@@ -244,52 +239,32 @@ class jobsdbBot:
         #Write job details to the CSV file
             for job_details in job_details_list:
                 dictWriter.writerow(job_details)
-    """
-    job_data = []
-    for data in range(len(jobs)):
-        # Find and print Job Highlights (inside the loop)
-        job = jobs[data]
-        jobHighlights = job.select("ul.z1s6m00 li")
-        # Find and print URL (inside the loop)
-        link = jobUrls[data].get('href')
 
-        jobs_dict = {
-            '職位名稱': jobPosition[data].text,
-            '公司名稱': companyName[data].text if data < len(companyName) else '',
-            '地區': jobLocation[data].text if data < len(jobLocation) else '',
-            '工作詳情': '\n'.join([highlight.text for highlight in jobHighlights]),
-            '發佈時間': postedDate[data].text if data < len(postedDate) else '',
-            '網址': domain + link if data < len(jobUrls) else ''
-        }
-        job_data.append(jobs_dict)
-    # Create a pandas DataFrame from the list of dictionaries
-    df = pd.DataFrame(job_data)
+        # Create a pandas DataFrame from the list of dictionaries        
+        df = pd.DataFrame(job_details_list)    
 
-    # Save the DataFrame to an Excel file
-    excel_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.xlsx")
-    df.to_excel(excel_file, index=False)
+        # Save the DataFrame to an Excel file
+        excel_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.xlsx")
+        df.to_excel(excel_file, index=False)
 
-    # Create a Pandas Excel writer using XlsxWriter as the engine
-    writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
+        # Create a Pandas Excel writer using XlsxWriter as the engine
+        writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
 
-    # Convert the DataFrame to an XlsxWriter Excel object
-    df.to_excel(writer, sheet_name='Sheet1', index=False)
+        # Convert the DataFrame to an XlsxWriter Excel object
+        df.to_excel(writer, sheet_name='Sheet1', index=False)
 
-    # Get the XlsxWriter workbook and worksheet objects
-    workbook  = writer.book
-    worksheet = writer.sheets['Sheet1']
+        # Get the XlsxWriter workbook and worksheet objects
+        workbook  = writer.book
+        worksheet = writer.sheets['Sheet1']
 
-    # Add a hyperlink format to be used in the "網址" column
-    url_format = workbook.add_format({'color': 'blue', 'underline': 1})
-    # Define the "網址" column range
-    url_col = df.columns.get_loc('網址') # Add 1 to get the Excel column number (1-indexed)
+        # Add a hyperlink format to be used in the "網址" column
+        url_format = workbook.add_format({'color': 'blue', 'underline': 1})
+        # Define the "網址" column range
+        url_col = df.columns.get_loc('網址') # Add 1 to get the Excel column number (1-indexed)
 
-    # Iterate through the rows and add hyperlinks to the "網址" column
-    for row_num in range(len(df)):
-        cell_value = df.at[row_num, '網址']
-        worksheet.write_url(row_num + 1, url_col, cell_value, url_format)
-
-
-    # Close the Pandas Excel writer and save the Excel file
-    writer.close()
-    """
+        # Iterate through the rows and add hyperlinks to the "網址" column
+        for row_num in range(len(df)):
+            cell_value = df.at[row_num, '網址']
+            worksheet.write_url(row_num + 1, url_col, cell_value, url_format)
+        # Close the Pandas Excel writer and save the Excel file
+        writer.close()

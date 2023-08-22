@@ -1,14 +1,24 @@
-from jobsdb_bot import jobsdbBot
+from JobsDB_bot import jobsdbBot
 
 domain = "https://hk.jobsdb.com/"
 job_keyword = "programmer" #keyword to search
-locations = ['Eastern','Wan Chai'] 
-dates = ['1 day']
+locations = ['Eastern','Wan Chai','Kwai Tsing'] 
+dates = ['All']
 #format = "" #excel or csv
 
 bot = jobsdbBot(domain, job_keyword,locations,dates)
 bot.start()
 #python3 jobsearch.py
+
+#Dates
+"""
+All
+1 day
+3 days
+7 days
+14 days
+"""
+
 #Max 5 locations 
 """
 All
