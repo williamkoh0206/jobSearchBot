@@ -2,11 +2,11 @@ from JobsDB_bot import jobsdbBot
 
 domain = "https://hk.jobsdb.com/"
 job_keyword = "programmer" #keyword to search
-locations = ['Eastern','Wan Chai','Kwai Tsing'] 
-dates = ['All']
-#format = "" #excel or csv
+locations = 'Eastern','Wan Chai' 
+dates = 'All'
+format = 'excel'
 
-bot = jobsdbBot(domain, job_keyword,locations,dates)
+bot = jobsdbBot(domain, job_keyword,locations,dates,format)
 bot.start()
 #python3 jobsearch.py
 
