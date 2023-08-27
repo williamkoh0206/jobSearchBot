@@ -2,9 +2,9 @@ from JobsDB_bot import jobsdbBot
 
 domain = "https://hk.jobsdb.com/"
 job_keyword = "programmer" #keyword to search
-locations = 'Eastern','Wan Chai' 
-dates = 'All'
-format = 'excel'
+locations = 'Eastern','Wan Chai','Kwun Tong'
+dates = ['1 day']
+format = 'all'
 
 bot = jobsdbBot(domain, job_keyword,locations,dates,format)
 bot.start()
@@ -41,4 +41,10 @@ Wan Chai
 Wong Tai Sin
 Yau Tsim Mong
 Yuen Long
+"""
+#Format
+"""
+excel
+csv
+all
 """
