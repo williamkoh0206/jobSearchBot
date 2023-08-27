@@ -36,25 +36,25 @@ class jobsdbBot:
 
         for i in range(len(jobs)):
           # Print Job Information
-            print("JobPost:", jobPosition[i].text)
-            if i < len(companyName):
-                print("Company:", companyName[i].text)
-            if i < len(jobLocation):
-                print("Location:", jobLocation[i].text)
+            # print("JobPost:", jobPosition[i].text)
+            # if i < len(companyName):
+            #     print("Company:", companyName[i].text)
+            # if i < len(jobLocation):
+            #     print("Location:", jobLocation[i].text)
             # Find and print Job Highlights
             job = jobs[i]
             jobHighlights = job.select("ul.z1s6m00 li")
             job_highlights_list = [highlight.text for highlight in jobHighlights]
             job_highlights_str = '\n'.join(job_highlights_list)
-            print("Job Highlights:")
-            for highlight in jobHighlights:
-                print("  *", highlight.text)
-            if i < len(postedDate):
-                print("Posted on:",postedDate[i].text)
-            if i < len(jobUrls):
-                link = jobUrls[i].get('href')
-                print("URL:", domain + link)
-                print("=" * 70)
+            # print("Job Highlights:")
+            # for highlight in jobHighlights:
+            #     print("  *", highlight.text)
+            # if i < len(postedDate):
+            #     print("Posted on:",postedDate[i].text)
+            # if i < len(jobUrls):
+            #     link = jobUrls[i].get('href')
+            #     print("URL:", domain + link)
+            #     print("=" * 70)
             job_details = {
                 '職位名稱': jobPosition[i].text,
                 '公司名稱': companyName[i].text if i < len(companyName) else '',
@@ -191,7 +191,7 @@ class jobsdbBot:
         print(date_values)
 
         for selectedBtns in date_values:
-            if selectedBtns:
+            if selectedBtns:             
                 datesBtn[selectedBtns].click()
                 sleep(1)
             else:
@@ -218,51 +218,36 @@ class jobsdbBot:
         # ================ Scraping jobs ================
         try:
             if (driver.find_elements(By.CSS_SELECTOR,("div.z1s6m00[data-automation='pagination'] a"))):
+                nextpage_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")))
+                self.scrape_job_information()
+                driver.execute_script("arguments[0].click();", nextpage_btn)
+                sleep(2)
                 while True:
-                    try:
-                        nextpage_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")))
-                        if nextpage_btn.is_displayed():
-                            print('Button is found and clickable')
-                            print(f'Previous URL: {previous_url}')
-                            print(f'Current URL: {current_url}')
-                            if current_url != previous_url:
-                                self.scrape_job_information()            
-                                print(f'Scraping from: {current_url}')
-                                previous_url = current_url
-                                driver.execute_script("arguments[0].click();", nextpage_btn)
-                                driver.implicitly_wait(5)
-                                sleep(2)
-                                updated_url = driver.current_url
-                                current_url = updated_url             
-                                #clicked_next_page_count += 1
-                                print(f'Navigating to next page: {current_url}')              
-                                driver.implicitly_wait(10)
-                                print('case1')
-                                next_page_btns = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")
-                                print(f'elements was found: {len(next_page_btns)}')
-                                driver.implicitly_wait(20)
-                                # if len(next_page_btns) ==2:
-                                #     driver.execute_script("arguments[0].click();", next_page_btns[1])
-                                #     driver.implicitly_wait(20)
-                                #     print('case3')
-                                #     #continue                                                               
-                                # elif driver.find_element(By.CSS_SELECTOR,"button.z1s6m00[disabled]"):
-                                #     driver.implicitly_wait(3)
-                                #     endBtn = driver.find_element(By.CSS_SELECTOR,"button.z1s6m00[disabled]")
-                                #     driver.execute_script("arguments[0].click();",endBtn)
-                                #     print("Finish~")
-                                break                                                    
-                        else:
-                            print('Button is not displayed or already clicked twice')
-                            break                
+                    try:                                     
+                        next_page_btns = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")
+                        print(f'elements was found: {len(next_page_btns)}')
+                        driver.implicitly_wait(10)
+                        if len(next_page_btns) ==2:
+                            driver.execute_script("arguments[0].click();", next_page_btns[1])
+                            sleep(3)
+                            self.scrape_job_information()                                                              
+                            continue
+                        elif driver.find_element(By.CSS_SELECTOR,"button.z1s6m00[disabled]"):
+                            driver.implicitly_wait(3)
+                            endBtn = driver.find_element(By.CSS_SELECTOR,"button.z1s6m00[disabled]")
+                            driver.execute_script("arguments[0].click();",endBtn)
+                            print("Finish~")
+                        break                                                                                                                                                   
                     except:               
                         print("No more pages to navigate")
                         break
                 self.scrape_job_information()
-                print("Finished navigating and scraping")              
+                print("Finished navigating and scraping")
+            else:
+                self.scrape_job_information()
+                print('Only one page result!')
         except:
-            self.scrape_job_information()
-            print("Only 1 page result")
+            print("No next page button")
         
         if format == 'excel':
             self.exportFormat('excel')
