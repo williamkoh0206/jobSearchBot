@@ -12,12 +12,14 @@ import xlsxwriter
 import os
 
 class jobsdbBot:
-    def __init__(self, _domain, _keywords, _locations, _dates,_format):
-        global domain, job_keyword, locations,dates,format
+    def __init__(self, _domain, _keywords, _locations, _dates, _jobtypes, _jobfunctions, _format):
+        global domain, job_keyword, locations,dates,jobtypes,jobfunctions,format
         domain = _domain
         job_keyword = _keywords
         locations = _locations
         dates = _dates
+        jobtypes = _jobtypes
+        jobfunctions = _jobfunctions
         format = _format
         self.job_details_list = [] 
     
@@ -116,6 +118,7 @@ class jobsdbBot:
         except:
             options = webdriver.EdgeOptions()
             self.setOption()
+            options.add_argument("--guest")
             driver = webdriver.Edge(options = options)
         driver.maximize_window()
         driver.implicitly_wait(10)
@@ -130,7 +133,6 @@ class jobsdbBot:
         #location_names = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00:not([data-automation]) label.z1s6m00:not([data-automation])")
         location_btn = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00 input.z1s6m00")
 
-        
         selectedLocations = {
             'All': 1,
             'Central & Western': 2,
@@ -154,21 +156,23 @@ class jobsdbBot:
             'Yuen Long':20
         }
         # ================ Select job locations ================
-        selected_values = []
+        selected_locvalueslist = []
         for loc in locations:
             if loc in selectedLocations:
                 selected_value = selectedLocations[loc] #match the user inputs as the key of the selectedLocations
-                selected_values.append(selected_value) #update the corresponding value to the array
-        print(selected_values)
+                selected_locvalueslist.append(selected_value) #update the corresponding value to the array
+                print(selected_value, loc)
 
-        for selectBtns in selected_values:
-            if selectBtns in range(1, len(location_btn) - 7): #[1-20] are the hk locations
-                location_btn_element = location_btn[selectBtns]
-                action = ActionChains(driver)
-                action.move_to_element(location_btn_element).click().perform()
-                sleep(1)
+        for selectBtns in selected_locvalueslist:
+            print(len(location_btn))
+            if selectBtns >= 1 and selectBtns <= 20: #[1-20] are the hk locations
+                sleep(1) #Dealy for the program to identify the releated index
+                location_btn[selectBtns].click()
+                # ActionChains(driver).move_to_element(location_btn_element).click().perform()
+                print(driver.find_element(By.CSS_SELECTOR,"div.z1s6m00._23enrv2 span span").text)
             else:
-                print("Selected value is not in the valid range.")
+                print("Selected locations are not in the valid range.")
+        sleep(1)
         driver.find_element(By.CSS_SELECTOR, ("button[data-automation='searchSubmitButton']")).click()
         sleep(1)
 
@@ -181,24 +185,115 @@ class jobsdbBot:
             '1 day':1,
             '3 days':2,
             '7 days':3,
-            '14 days':4
+            '14 days':4,
+            '30 days':5
         }
         date_values = []
         for date in dates:
             if date in selectedDates:
                 selected_dates_value = selectedDates[date] #match the user inputs as the key of the selectedDates and store the related value
                 date_values.append(selected_dates_value) #update the corresponding value to the array
-        print(date_values)
+                print(f'Dates Btns:{len(datesBtn)}')
+                print(date,date_values)
 
         for selectedBtns in date_values:
-            if selectedBtns:             
+            print(date,date_values)
+            if selectedBtns <=6:
+                sleep(1)             
                 datesBtn[selectedBtns].click()
-                sleep(1)
             else:
-                print("Selected value is not in the valid range.")
+                print("Selected date are not in the valid range.")
 
+        sleep(1)
         driver.find_element(By.CSS_SELECTOR, ("button[data-automation='refinementFormApplyButton']")).click()
-        sleep(3)
+        sleep(1)
+
+        # ================ Select job type option================
+        driver.find_element(By.CSS_SELECTOR,'button[data-automation="jobTypeFilterButton"]').click()
+        sleep(1)
+
+        jobTypesBtns = driver.find_elements(By.CSS_SELECTOR,'div.z1s6m00 input[name="jobTypes"]')
+        print(f'jobTypes Btns:{len(jobTypesBtns)}')
+        selectedJobTypes = {
+            'FT': 0,
+            'PT':1,
+            'Perm':2,
+            'Tem':3,
+            'Cont':4,
+            'Intern':5,
+            'Free':6 
+        }
+        selectedjob_types = []
+        for types in jobtypes:
+            if types in selectedJobTypes:
+                selectedTypes = selectedJobTypes[types] #select the index in the dictionary
+                selectedjob_types.append(selectedTypes)
+                #print(f'Job Types:{types,selectedjob_types}')
+                print(types,selectedjob_types)
+
+        for selectedBtns in selectedjob_types:
+            if selectedBtns <=7:
+                sleep(1)
+                jobTypesBtns[selectedBtns].click()
+            else:
+                print("Selected jobTypes are not in the valid range.")
+
+        sleep(1)
+        driver.find_element(By.CSS_SELECTOR, ("button[data-automation='refinementFormApplyButton']")).click()
+        sleep(1)
+
+        # ================ Select Job Functions ================
+        driver.find_elements(By.CSS_SELECTOR,"button._23enrv0")[1].click()
+        sleep(1)
+        
+        jobFunctionBtns = driver.find_elements(By.CSS_SELECTOR,'div.z1s6m00 input.z1s6m00')
+
+        selectedJobFunctions = {
+            '1': 1,
+            '2':2,
+            '3':3,
+            '4':4,
+            '5':5,
+            '6':6,
+            '7':7,
+            '8':8,
+            '9':9,
+            '10':10,
+            '11':11,
+            '12':12,
+            '13':13,
+            '14':14,
+            '15':15,
+            '16':16,
+            '17':17,
+            '18':18,
+            '19':19,
+            '20':20,
+            '21':21,
+            '22':22,
+            '23':23,
+            '24':24,
+            '25':25,
+            '26':26
+        }
+
+        selected_jobfunctionslist = []
+        for jobfun in jobfunctions:
+            if jobfun in selectedJobFunctions:
+                selected_functions = selectedJobFunctions[jobfun]
+                selected_jobfunctionslist.append(selected_functions)
+                print(selected_functions, jobfun)
+        for selectBtns in selected_jobfunctionslist:
+            print(len(jobFunctionBtns))
+            if selectBtns >=1 and selectBtns <=26:#[1-25] all are the job functions options
+                sleep(1)
+                jobFunctionBtns[selectBtns].click()
+                print(driver.find_elements(By.CSS_SELECTOR,"div.z1s6m00._23enrv2 span span")[1].text)
+            else:
+                print("Selected job functions are not in the valid range.")
+        sleep(1)
+        driver.find_element(By.CSS_SELECTOR, ("button[data-automation='searchSubmitButton']")).click()
+        sleep(1)
 
         # ================ Search jobs one by one================
         # clickJobPosts = driver.find_elements(By.CSS_SELECTOR,"article.z1s6m00")
@@ -213,24 +308,20 @@ class jobsdbBot:
         #         print("Element is not clickable or not found.")
         # driver.execute_script("window.scrollBy(0,20);")
 
-        previous_url = ''
-        current_url = driver.current_url  
         # ================ Scraping jobs ================
         try:
             if (driver.find_elements(By.CSS_SELECTOR,("div.z1s6m00[data-automation='pagination'] a"))):
                 nextpage_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")))
                 self.scrape_job_information()
                 driver.execute_script("arguments[0].click();", nextpage_btn)
-                sleep(2)
                 while True:
                     try:                                     
                         next_page_btns = driver.find_elements(By.CSS_SELECTOR, "div.z1s6m00[data-automation='pagination'] a")
-                        print(f'elements was found: {len(next_page_btns)}')
+                        print(f'elements was found')
                         driver.implicitly_wait(10)
                         if len(next_page_btns) ==2:
-                            driver.execute_script("arguments[0].click();", next_page_btns[1])
-                            sleep(3)
-                            self.scrape_job_information()                                                              
+                            self.scrape_job_information()
+                            driver.execute_script("arguments[0].click();", next_page_btns[1])                                                                             
                             continue
                         elif driver.find_element(By.CSS_SELECTOR,"button.z1s6m00[disabled]"):
                             driver.implicitly_wait(3)
@@ -255,49 +346,3 @@ class jobsdbBot:
             self.exportFormat('csv')
         elif  format == 'all':
             self.exportFormat('all')
-
-
-
-        """    
-        output_folder = os.path.join(os.path.dirname(__file__), "output")
-        os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
-        columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']
-        csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.csv")
-
-        #open the csv file for writing
-        with open(csv_file, 'w', newline='',encoding='utf_8_sig') as csvFile:
-            dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
-            dictWriter.writeheader()
-        #Write job details to the CSV file
-            for job_details in job_details_list:
-                dictWriter.writerow(job_details)
-
-        # Create a pandas DataFrame from the list of dictionaries        
-        df = pd.DataFrame(job_details_list)    
-
-        # Save the DataFrame to an Excel file
-        excel_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.xlsx")
-        df.to_excel(excel_file, index=False)
-
-        # Create a Pandas Excel writer using XlsxWriter as the engine
-        writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
-
-        # Convert the DataFrame to an XlsxWriter Excel object
-        df.to_excel(writer, sheet_name='Sheet1', index=False)
-
-        # Get the XlsxWriter workbook and worksheet objects
-        workbook  = writer.book
-        worksheet = writer.sheets['Sheet1']
-
-        # Add a hyperlink format to be used in the "網址" column
-        url_format = workbook.add_format({'color': 'blue', 'underline': 1})
-        # Define the "網址" column range
-        url_col = df.columns.get_loc('網址') # Add 1 to get the Excel column number (1-indexed)
-
-        # Iterate through the rows and add hyperlinks to the "網址" column
-        for row_num in range(len(df)):
-            cell_value = df.at[row_num, '網址']
-            worksheet.write_url(row_num + 1, url_col, cell_value, url_format)
-        # Close the Pandas Excel writer and save the Excel file
-        writer.close()
-        """
