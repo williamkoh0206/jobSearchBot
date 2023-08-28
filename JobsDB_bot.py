@@ -228,7 +228,6 @@ class jobsdbBot:
             if types in selectedJobTypes:
                 selectedTypes = selectedJobTypes[types] #select the index in the dictionary
                 selectedjob_types.append(selectedTypes)
-                #print(f'Job Types:{types,selectedjob_types}')
                 print(types,selectedjob_types)
 
         for selectedBtns in selectedjob_types:

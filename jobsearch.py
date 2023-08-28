@@ -1,7 +1,7 @@
 from JobsDB_bot import jobsdbBot
 
 domain = "https://hk.jobsdb.com/"
-job_keyword = "" #job position e.g programmer
+job_keyword = '' #job position e.g programmer
 locations = '' , '' #locations only 1 location, requires to use [] e.g [Eastern] >1 e.g 'Wan Chai','Eastern' MAX:5 
 """
 All
@@ -25,7 +25,7 @@ Wong Tai Sin
 Yau Tsim Mong
 Yuen Long
 """
-dates = [''] #requires only put ONE value e.g ['1 day']
+dates = [''] #requires only put ONE input e.g ['1 day']
 """
 All
 1 day
@@ -34,7 +34,7 @@ All
 14 days
 30 days
 """
-jobtypes = [''] #requires only put ONE value e.g ['PT']
+jobtypes = '','' #Can select all e.g 'FT', 'PT'
 """
 'FT'
 'PT'
