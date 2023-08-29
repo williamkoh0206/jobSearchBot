@@ -1,8 +1,8 @@
 from JobsDB_bot import jobsdbBot
 
 domain = "https://hk.jobsdb.com/"
-job_keyword = 'business analyst' #job position e.g programmer
-locations = 'Eastern' , 'Wan Chai', 'Kwun Tong'#locations only 1 location, requires to use [] e.g [Eastern] >1 e.g 'Wan Chai','Eastern' MAX:5 
+job_keyword = '' #job position e.g programmer
+locations = '' , '', ''#locations only 1 location, requires to use [] e.g [Eastern] >1 e.g 'Wan Chai','Eastern' MAX:5 
 """
 All
 Central & Western
@@ -25,7 +25,7 @@ Wong Tai Sin
 Yau Tsim Mong
 Yuen Long
 """
-dates = ['All'] #requires only put ONE input e.g ['1 day']
+dates = [''] #requires only put ONE input e.g ['1 day']
 """
 All
 1 day
@@ -34,7 +34,7 @@ All
 14 days
 30 days
 """
-jobtypes = ['FT'] #only 1 location, requires to use [] e.g ['FT'] Can select all e.g 'FT', 'PT'...
+jobtypes = [''] #only 1 location, requires to use [] e.g ['FT'] Can select all e.g 'FT', 'PT'...
 """
 'FT'
 'PT'
@@ -44,7 +44,7 @@ jobtypes = ['FT'] #only 1 location, requires to use [] e.g ['FT'] Can select all
 'Intern'
 'Free'
 """
-jobfunctions = ['1']#jobfunctions only 1 function, requires to use [] e.g [1] >1 functions e.g '3','5' MAX:5
+jobfunctions = [''] #jobfunctions only 1 function, requires to use [] e.g [1] >1 functions e.g '3','5' MAX:5
 """
 1:"All"
 2:"Accounting"
@@ -73,7 +73,7 @@ jobfunctions = ['1']#jobfunctions only 1 function, requires to use [] e.g [1] >1
 25:"Transportation & Logistics"
 26:"Others"
 """
-format = 'all' #requires to select one format e.g 'excel'
+format = '' #requires to select one format e.g 'excel'
 """
 excel
 csv
