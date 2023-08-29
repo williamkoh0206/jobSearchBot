@@ -10,6 +10,7 @@ import csv
 import pandas as pd
 import xlsxwriter
 import os
+import datetime
 
 class jobsdbBot:
     def __init__(self, _domain, _keywords, _locations, _dates, _jobtypes, _jobfunctions, _format):
@@ -69,12 +70,13 @@ class jobsdbBot:
     
     def exportFormat(self,format):
         jobs_data = self.job_details_list
+        export_date = datetime.datetime.now().strftime("%d-%m") 
         output_folder = os.path.join(os.path.dirname(__file__), "output")
         os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
-        columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']         
+        columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']        
 
         if format in ['csv','all']:
-            csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.csv")
+            csv_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_{export_date}.csv")
             with open(csv_file, 'w', newline='', encoding='utf_8_sig') as csvFile:
                 dictWriter = csv.DictWriter(csvFile, fieldnames=columns_name)
                 dictWriter.writeheader()
@@ -83,7 +85,7 @@ class jobsdbBot:
 
         if format in ['excel', 'all']:
             df = pd.DataFrame(jobs_data)
-            excel_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_Post.xlsx")
+            excel_file = os.path.join(output_folder, f"jobsDB_{job_keyword}_{export_date}.xlsx")
             df.to_excel(excel_file, index=False)
 
             writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
@@ -96,6 +98,17 @@ class jobsdbBot:
             for row_num in range(len(df)):
                 cell_value = df.at[row_num, '網址']
                 worksheet.write_url(row_num + 1, url_col, cell_value, url_format)
+
+            # Expand column width
+            for col_num, column in enumerate(df.columns):
+                #loop through all the columns their maximum length while astype is to make sure the len were matched for all data types
+                max_len = max(df[column].astype(str).map(len).max(), len(column)) 
+                worksheet.set_column(col_num, col_num, max_len + 2) #The +2 is added to provide some extra padding for better readability.
+
+            # Add filters to rows
+            last_col_letter = xlsxwriter.utility.xl_col_to_name(df.shape[1] - 1) #df.shape([0:row | 1: column] - 1: 0 base index)
+            worksheet.autofilter(f"A1:{last_col_letter}6") #A1{index:5 - python start from 0} to 6
+
             writer.close()
         print(f"Exported job data in {format.upper()} format.")
     
@@ -118,7 +131,10 @@ class jobsdbBot:
         except:
             options = webdriver.EdgeOptions()
             self.setOption()
-            options.add_argument("--guest")
+            #options.add_argument("--guest")
+            options.add_argument("--disable-features=TranslateUI")
+            options.add_argument("--disable-translate")
+            options.add_argument("--lang=zh-TW")
             driver = webdriver.Edge(options = options)
         driver.maximize_window()
         driver.implicitly_wait(10)
