@@ -72,7 +72,12 @@ class jobsdbBot:
     def exportFormat(self,format):
         jobs_data = self.job_details_list
         export_date = datetime.datetime.now().strftime("%d-%m") 
-        output_folder = os.path.join(os.path.dirname(__file__), "output")
+        if getattr(sys, 'frozen', False):
+            output_folder = os.path.join(sys._MEIPASS, "工作搜尋結果")
+        else:
+            output_folder = os.path.join(os.path.dirname(__file__), "output")
+        #output_folder = os.path.join(os.path.dirname(__file__), "output")
+        #os.path.dirname(os.path.abspath(__file__))
         os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
         columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']        
 
@@ -137,6 +142,7 @@ class jobsdbBot:
         # ================ Chrome Browser Automation Start ================     
         global driver
         try:
+            options.add_argument("--remote-allow-origins=*")
             driver = webdriver.Chrome(options=options)
         except:
             options = webdriver.EdgeOptions()
@@ -255,9 +261,13 @@ class jobsdbBot:
                         break
                 self.scrape_job_information()
                 print("Finished navigating and scraping")
+                sleep(3)
+                driver.quit()
             else:
                 self.scrape_job_information()
                 print('Only one page result!')
+                sleep(3)
+                driver.quit()
         except:
             print("No next page button")
         

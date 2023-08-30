@@ -4,7 +4,7 @@ domain = "https://hk.jobsdb.com/"
 #testing debug
 # bot = jobsdbBot(domain, 'business analyst',[4,17,7],[1],[1,2],[1,12,8],'all')
 # bot.start()
-job_keyword = input("Please input job keyword: ")
+job_keyword = input("Please input job keyword 請輸入工作關鍵字: ")
 locations = input("""
 ====================================
 1.  All 全部
