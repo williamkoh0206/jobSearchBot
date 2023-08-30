@@ -269,9 +269,9 @@ class jobsdbBot:
         except:
             print("No next page button")
         
-        if format == 'excel' or 'Excel':
+        if format == 'excel':
             self.exportFormat('excel')
-        elif  format == 'csv' or 'Csv':
+        elif  format == 'csv':
             self.exportFormat('csv')
-        elif  format == 'all' or 'All':
+        elif  format == 'all':
             self.exportFormat('all')
