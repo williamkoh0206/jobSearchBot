@@ -32,55 +32,55 @@ Please input location index:""")
 locations = [int(x) for x in locations.split(',')]
 dates = input("""
 ====================================
-1. All
-2. 1 day
-3. 3 days
-4. 7 days
-5. 14 days
-6. 30 days
+1. All 全部
+2. 1 day 1日前刊登
+3. 3 days 3日前刊登
+4. 7 days 7日前刊登
+5. 14 days 14日前刊登
+6. 30 days 30日前刊登
 ====================================
 Please input dates index:""")
 dates = [int(x) for x in dates.split(',')]
 jobtypes = input("""
 ====================================
-1. Full Time  
-2. Part Time  
-3. Permanent  
-4. Temporary  
-5. Contract
-6. Intern
-7. Freelance
+1. Full Time 全職  
+2. Part Time 兼職  
+3. Permanent 長期工作  
+4. Temporary 臨時工作  
+5. Contract 合約
+6. Intern 實習
+7. Freelance 自由職業
 ====================================
 Please input jobtypes index:""")
 jobtypes = [int(x) for x in jobtypes.split(',')]
 jobfunctions = input("""
 ====================================
-1:"All"
-2:"Accounting"
-3:"Admin & HR"
-4:"Banking / Finance"
-5:"Beauty / Health"
-6:"Building & Construction"
-7:"Design"
-8:"E-commerce"
-9:"Education"
-10:"Enginnering"
-11:"Hospitality / F & B"
-12:"IT"
-13:"Insurance"
-14:"Management"
-15:"Manfacturing"
-16:"Marketing / PR"
-17:"Media / Ads"
-18:"Medical Services"
-19:"Merchant & Purchase"
-20:"Professional Service"
-21:"Property / Real Estate"
-22:"Public / Civil"
-23:"Sales / CS & Business Devpt"
-24:"Sciences, Lab, R&D"
-25:"Transportation & Logistics"
-26:"Others"
+1:All 全部
+2:Accounting 會計
+3:Admin & HR 行政及人力資源 
+4:Banking / Finance 銀行/金融
+5:Beauty / Health 美容/健康
+6:Building & Construction 建築與施工
+7:Design 設計
+8:E-commerce 電子商務
+9:Education 教育
+10:Enginnering 工程
+11:Hospitality / F & B 酒店/餐飲
+12:IT 資訊科技
+13:Insurance 保險
+14:Management 管理
+15:Manfacturing 製造
+16:Marketing / PR 營銷/公關
+17:Media / Ads 媒體/廣告
+18:Medical Services 醫療服務
+19:Merchant & Purchase 商戶採購
+20:Professional Service 專業服務
+21:Property / Real Estate 財產/房地產
+22:Public / Civil 公共/民用
+23:Sales / CS & Business Devpt 銷售/客戶服務和業務開發
+24:Sciences, Lab, R&D 科學、實驗室、研發
+25:Transportation & Logistics 運輸與物流
+26:Others 其他
 ====================================
 Please input jobfunctions index:""")
 jobfunctions = [int(x) for x in jobfunctions.split(',')]
