@@ -6,7 +6,8 @@ domain = "https://hk.jobsdb.com/"
 # bot.start()
 job_keyword = input("Please input job keyword 請輸入工作關鍵字: ")
 locations = input("""
-====================================
+可以選擇多於1個，並且用,分隔 e.g 1,2 : 上限為5個
+====================================                
 1.  All 全部
 2.  Central & Western 中西區
 3.  Cheung Chau 長州
@@ -31,6 +32,7 @@ locations = input("""
 Please input location index:""")
 locations = [int(x) for x in locations.split(',')]
 dates = input("""
+只可選擇一個
 ====================================
 1. All 全部
 2. 1 day 1日前刊登
@@ -42,6 +44,7 @@ dates = input("""
 Please input dates index:""")
 dates = [int(x) for x in dates.split(',')]
 jobtypes = input("""
+可以選擇多於1個，並且用,分隔 e.g 1,2 : 可以選擇全部                 
 ====================================
 1. Full Time 全職  
 2. Part Time 兼職  
@@ -54,6 +57,7 @@ jobtypes = input("""
 Please input jobtypes index:""")
 jobtypes = [int(x) for x in jobtypes.split(',')]
 jobfunctions = input("""
+可以選擇多於1個，並且用,分隔 e.g 1,2 : 上限為5個
 ====================================
 1:All 全部
 2:Accounting 會計
@@ -85,11 +89,12 @@ jobfunctions = input("""
 Please input jobfunctions index:""")
 jobfunctions = [int(x) for x in jobfunctions.split(',')]
 format = input("""
+請輸入格式: excel | csv | all              
 ====================================               
 excel
 csv                              
 all               
-Please input desired formats:""")
+Please input expected formats:""")
 
 bot = jobsdbBot(domain, job_keyword,locations,dates,jobtypes,jobfunctions,format)
 bot.start()

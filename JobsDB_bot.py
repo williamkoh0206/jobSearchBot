@@ -76,8 +76,6 @@ class jobsdbBot:
             output_folder = os.path.join(sys._MEIPASS, "工作搜尋結果")
         else:
             output_folder = os.path.join(os.path.dirname(__file__), "output")
-        #output_folder = os.path.join(os.path.dirname(__file__), "output")
-        #os.path.dirname(os.path.abspath(__file__))
         os.makedirs(output_folder, exist_ok=True) # Create the output folder if it doesn't exist
         columns_name=['職位名稱','公司名稱','地區','工作詳情','發佈時間','網址']        
 
@@ -147,7 +145,7 @@ class jobsdbBot:
         except:
             options = webdriver.EdgeOptions()
             self.setOption()
-            #options.add_argument("--guest")
+            options.add_argument("--guest")
             options.add_argument("--disable-features=TranslateUI")
             options.add_argument("--disable-translate")
             options.add_argument("--lang=zh-TW")
@@ -271,9 +269,9 @@ class jobsdbBot:
         except:
             print("No next page button")
         
-        if format == 'excel':
+        if format == 'excel' or 'Excel':
             self.exportFormat('excel')
-        elif  format == 'csv':
+        elif  format == 'csv' or 'Csv':
             self.exportFormat('csv')
-        elif  format == 'all':
+        elif  format == 'all' or 'All':
             self.exportFormat('all')
